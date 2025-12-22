@@ -194,7 +194,7 @@ The proxy server exposes the following endpoints:
 ### Azure App Service
 
 The app is configured for deployment at:
-**https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/**
+**https://performancetool-snowy.vercel.app//**
 
 1. **Build the application**
    ```bash

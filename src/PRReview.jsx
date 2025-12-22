@@ -113,7 +113,7 @@ Return ONLY valid JSON in this format:
 
     try {
       const apiUrl = import.meta.env.PROD 
-        ? 'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/api/analyze-pr'
+        ? 'https://performancetool-snowy.vercel.app//api/analyze-pr'
         : 'http://localhost:3001/api/analyze-pr';
 
       const response = await fetch(apiUrl, {

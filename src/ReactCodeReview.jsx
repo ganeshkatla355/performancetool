@@ -19,7 +19,7 @@ export default function ReactCodeReviewer() {
 
     try {
       const apiUrl = import.meta.env.PROD
-        ? 'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/api/review-code'
+        ? 'https://performancetool-snowy.vercel.app//api/review-code'
         : 'http://localhost:3001/api/review-code';
 
       const response = await fetch(apiUrl, {
