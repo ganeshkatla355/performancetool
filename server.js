@@ -14,7 +14,8 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net'
+    'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net',
+    'https://performancetool-snowy.vercel.app'
   ],
   credentials: true
 }));

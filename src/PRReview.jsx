@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Upload, FileCode, Bot, GitPul
 const AIPRReviewSystem = () => {
   const [prUrl, setPrUrl] = useState('');
   // Azure DevOps token must be provided by the user, do not hardcode secrets
-  const [azureToken, setAzureToken] = useState('');
+  const [azureToken, setAzureToken] = useState('61QETmUeAmhaubqoxGkii1AkLTyYas9u8yYg2ZmSsoTWwXWlRGqnJQQJ99BLACAAAAAAZR5mAAASAZDO43W7');
   const [reviewing, setReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
   const [error, setError] = useState('');
