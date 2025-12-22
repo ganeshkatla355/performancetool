@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const API_KEY = process.env.ANTHROPIC_API_KEY || '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';
+const API_KEY = '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';
 
 // Middleware
 app.use(cors({
