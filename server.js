@@ -7,54 +7,71 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const API_KEY = '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';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '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';
 
 // Middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173',  
+    'http://localhost:5173',
     'http://localhost:5174',
-    'https://performancetool-snowy.vercel.app/',
+    'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net',
     'https://performancetool-snowy.vercel.app'
   ],
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
 
-// Anthropic API proxy endpoint for PR review
+// OpenAI API proxy endpoint for PR review
 app.post('/api/analyze-pr', async (req, res) => {
   try {
-    const { systemPrompt, userMessage } = req.body;
+    let { systemPrompt, userMessage } = req.body;
 
     if (!systemPrompt || !userMessage) {
       return res.status(400).json({ error: 'Missing required fields: systemPrompt or userMessage' });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Try to parse userMessage as JSON and trim files if possible
+    let filesArr = [];
+    try {
+      const match = userMessage.match(/\[.*\]/s);
+      if (match) {
+        filesArr = JSON.parse(match[0]);
+        // Limit to first 5 files and trim each file's content to 500 lines max
+        filesArr = filesArr.slice(0, 5).map(f => ({
+          ...f,
+          content: f.content
+            ? f.content.split('\n').slice(0, 500).join('\n')
+            : f.content
+        }));
+        // Rebuild userMessage with trimmed files
+        userMessage = userMessage.replace(/\[.*\]/s, JSON.stringify(filesArr, null, 2));
+      }
+    } catch (e) {
+      // If parsing fails, just send as is
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        system: systemPrompt,
+        model: 'gpt-4-1106-preview',
         messages: [
-          {
-            role: 'user',
-            content: userMessage
-          }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
         ],
+        max_tokens: 4000,
+        temperature: 0.2
       })
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Anthropic API Error:', errorData);
+      console.error('OpenAI API Error:', errorData);
       return res.status(response.status).json({ 
-        error: 'Anthropic API request failed',
+        error: 'OpenAI API request failed',
         details: errorData 
       });
     }
@@ -71,7 +88,7 @@ app.post('/api/analyze-pr', async (req, res) => {
   }
 });
 
-// Anthropic API proxy endpoint for code review
+// OpenAI API proxy endpoint for code review
 app.post('/api/review-code', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -80,25 +97,25 @@ app.post('/api/review-code', async (req, res) => {
       return res.status(400).json({ error: 'Missing required field: messages (array)' });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        model: 'gpt-4-1106-preview',
         messages: messages,
+        max_tokens: 4000,
+        temperature: 0.2
       })
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Anthropic API Error:', errorData);
+      console.error('OpenAI API Error:', errorData);
       return res.status(response.status).json({ 
-        error: 'Anthropic API request failed',
+        error: 'OpenAI API request failed',
         details: errorData 
       });
     }
@@ -129,14 +146,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-
-// Export the app for Vercel serverless
-export default app;
-
-// If running locally, start the server
-if (process.env.VERCEL !== '1') {
-  app.listen(PORT, () => {
-    console.log(`🚀 Proxy server running on http://localhost:${PORT}`);
-    console.log(`📡 API endpoint: http://localhost:${PORT}/api/analyze-pr`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Proxy server running on http://localhost:${PORT}`);
+  console.log(`📡 API endpoint: http://localhost:${PORT}/api/analyze-pr`);
+});

@@ -2,10 +2,25 @@ import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Code, Loader2, FileCode } from 'lucide-react';
 
 export default function ReactCodeReviewer() {
+    const getSeverityColor = (severity) => {
+      switch (severity) {
+        case 'critical': return 'bg-red-100 text-red-800 border-red-300';
+        case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
+        case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'low': return 'bg-blue-100 text-blue-800 border-blue-300';
+        default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      }
+    };
   const [code, setCode] = useState('');
   const [reviewing, setReviewing] = useState(false);
   const [review, setReview] = useState(null);
   const [error, setError] = useState('');
+
+  const getScoreColor = (score) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
   const handleReview = async () => {
     if (!code.trim()) {
@@ -18,66 +33,40 @@ export default function ReactCodeReviewer() {
     setReview(null);
 
     try {
-      const apiUrl = import.meta.env.PROD
-        ? 'https://performancetool-snowy.vercel.app//api/review-code'
-        : 'http://localhost:3001/api/review-code';
+      const apiUrl = 'https://api.openai.com/v1/chat/completions';
+      const OPENAI_API_KEY = "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"; // Replace with your actual key or use env variable
+
+      const systemPrompt = `You are an expert React code reviewer. Review the following React code and provide a comprehensive analysis following these best practices and standards:\n\n**React Best Practices to Check:**\n1. Component Structure & Organization\n2. Hooks usage (useState, useEffect, useMemo, useCallback)\n3. Props validation and TypeScript types\n4. Performance optimizations\n5. Accessibility (a11y)\n6. Code readability and maintainability\n7. Error handling\n8. Security concerns\n9. Testing considerations\n10. Modern React patterns (avoid deprecated APIs)\n\n**Output Format:**\nRespond ONLY with a JSON object (no markdown, no preamble) in this exact structure:\n{\n  "overallScore": <number 0-100>,\n  "summary": "<brief summary>",\n  "issues": [\n    {\n      "severity": "critical|high|medium|low",\n      "category": "<category name>",\n      "issue": "<description>",\n      "recommendation": "<how to fix>"\n    }\n  ],\n  "goodPractices": ["<practice 1>", "<practice 2>"],\n  "securityConcerns": ["<concern 1>"] or [],\n  "performanceImprovements": ["<improvement 1>"] or [],\n  "accessibilityIssues": ["<issue 1>"] or [],\n  "suggestedCode": "<complete refactored code with all fixes applied>"\n}\n\n**Code to Review:**\n\`\`\`jsx\n${code}\n\`\`\`\n\nRemember: Return ONLY the JSON object, nothing else.`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
         },
         body: JSON.stringify({
+          model: 'gpt-4',
           messages: [
             {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
               role: 'user',
-              content: `You are an expert React code reviewer. Review the following React code and provide a comprehensive analysis following these best practices and standards:
-
-**React Best Practices to Check:**
-1. Component Structure & Organization
-2. Hooks usage (useState, useEffect, useMemo, useCallback)
-3. Props validation and TypeScript types
-4. Performance optimizations
-5. Accessibility (a11y)
-6. Code readability and maintainability
-7. Error handling
-8. Security concerns
-9. Testing considerations
-10. Modern React patterns (avoid deprecated APIs)
-
-**Output Format:**
-Respond ONLY with a JSON object (no markdown, no preamble) in this exact structure:
-{
-  "overallScore": <number 0-100>,
-  "summary": "<brief summary>",
-  "issues": [
-    {
-      "severity": "critical|high|medium|low",
-      "category": "<category name>",
-      "issue": "<description>",
-      "recommendation": "<how to fix>"
-    }
-  ],
-  "goodPractices": ["<practice 1>", "<practice 2>"],
-  "securityConcerns": ["<concern 1>"] or [],
-  "performanceImprovements": ["<improvement 1>"] or [],
-  "accessibilityIssues": ["<issue 1>"] or [],
-  "suggestedCode": "<complete refactored code with all fixes applied>"
-}
-
-**Code to Review:**
-\`\`\`jsx
-${code}
-\`\`\`
-
-Remember: Return ONLY the JSON object, nothing else.`
+              content: code
             }
-          ]
+          ],
+          temperature: 0.2
         })
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'API request failed');
+      }
+
       const data = await response.json();
-      const content = data.content[0].text;
+      const content = data.choices[0].message.content;
 
       // Clean up the response - remove markdown code blocks if present
       let cleanContent = content.trim();
@@ -91,22 +80,6 @@ Remember: Return ONLY the JSON object, nothing else.`
     } finally {
       setReviewing(false);
     }
-  };
-
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-300';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  const getScoreColor = (score) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
   };
 
   return (

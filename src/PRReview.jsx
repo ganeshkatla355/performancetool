@@ -3,8 +3,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Upload, FileCode, Bot, GitPul
 
 const AIPRReviewSystem = () => {
   const [prUrl, setPrUrl] = useState('');
-  // Azure DevOps token must be provided by the user, do not hardcode secrets
-  const [azureToken, setAzureToken] = useState('61QETmUeAmhaubqoxGkii1AkLTyYas9u8yYg2ZmSsoTWwXWlRGqnJQQJ99BLACAAAAAAZR5mAAASAZDO43W7');
+  const [azureToken, setAzureToken] = useState('1Tk4bixxtDoTZKsj9A7MB5Yp97L2bCb1dLDBP5fNe6MpU6ZlJXiyJQQJ99BLACAAAAAAZR5mAAASAZDO32jl');
   const [reviewing, setReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
   const [error, setError] = useState('');
@@ -113,7 +112,7 @@ Return ONLY valid JSON in this format:
 
     try {
       const apiUrl = import.meta.env.PROD 
-        ? 'https://performancetool-snowy.vercel.app//api/analyze-pr'
+        ? 'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/api/analyze-pr'
         : 'http://localhost:3001/api/analyze-pr';
 
       const response = await fetch(apiUrl, {

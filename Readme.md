@@ -1,16 +1,3 @@
-# Deployment on Vercel
-
-## Steps
-
-1. Push your code to GitHub (or GitLab/Bitbucket).
-2. Go to [Vercel](https://vercel.com/) and import your repository.
-3. Set the environment variable `ANTHROPIC_API_KEY` in the Vercel dashboard (Project Settings > Environment Variables).
-4. Deploy! Vercel will detect the configuration and build both the frontend and backend.
-
-## Notes
-- The backend API is deployed as a serverless function from `server.js`.
-- The frontend is built from the Vite React app in `src/` and served from the `dist/` directory.
-- Do **not** commit secrets to `.env`; use the Vercel dashboard for production secrets.
 # SchoolCafe Testing Tool
 
 Comprehensive suite for HTTP performance testing, SQL performance testing, AI-powered PR reviews, and React code reviews.
@@ -194,7 +181,7 @@ The proxy server exposes the following endpoints:
 ### Azure App Service
 
 The app is configured for deployment at:
-**https://performancetool-snowy.vercel.app//**
+**https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/**
 
 1. **Build the application**
    ```bash
