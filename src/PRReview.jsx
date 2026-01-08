@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Upload, FileCode, Bot, GitPul
 
 const AIPRReviewSystem = () => {
   const [prUrl, setPrUrl] = useState('');
-  const [azureToken, setAzureToken] = useState('1Tk4bixxtDoTZKsj9A7MB5Yp97L2bCb1dLDBP5fNe6MpU6ZlJXiyJQQJ99BLACAAAAAAZR5mAAASAZDO32jl');
+  const [azureToken, setAzureToken] = useState('AUdvztla1xnYRO0xnFRbU9nGBEdutBXvSutLNsGohWrKfkqMrGcPJQQJ99CAACAAAAAAZR5mAAASAZDO4JzD');
   const [reviewing, setReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
   const [error, setError] = useState('');
@@ -111,9 +111,7 @@ Return ONLY valid JSON in this format:
 }`;
 
     try {
-      const apiUrl = import.meta.env.PROD 
-        ? 'https://schoolcafeperformancetester-gbe0dwcehdhae4c7.eastus2-01.azurewebsites.net/api/analyze-pr'
-        : 'http://localhost:3001/api/analyze-pr';
+      const apiUrl = '/api/analyze-pr';
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -132,11 +130,7 @@ Return ONLY valid JSON in this format:
       }
 
       const data = await response.json();
-      const reviewText = data.content[0].text;
-      
-      // Clean and parse JSON response
-      const cleanJson = reviewText.replace(/```json\n?|\n?```/g, '').trim();
-      return JSON.parse(cleanJson);
+        return data;
     } catch (err) {
       console.error('AI Analysis Error:', err);
       throw new Error('Failed to analyze code with AI');
@@ -167,7 +161,14 @@ Return ONLY valid JSON in this format:
       });
 
       if (!prResponse.ok) {
-        throw new Error('Failed to fetch PR details from Azure DevOps');
+        const errorText = await prResponse.text();
+        console.error('Azure DevOps PR details fetch failed:', {
+          status: prResponse.status,
+          statusText: prResponse.statusText,
+          url: apiUrl,
+          errorText
+        });
+        throw new Error(`Failed to fetch PR details from Azure DevOps: ${prResponse.status} ${prResponse.statusText}`);
       }
 
       const prData = await prResponse.json();
@@ -183,7 +184,14 @@ Return ONLY valid JSON in this format:
       });
 
       if (!changesResponse.ok) {
-        throw new Error('Failed to fetch PR changes');
+        const errorText = await changesResponse.text();
+        console.error('Azure DevOps PR changes fetch failed:', {
+          status: changesResponse.status,
+          statusText: changesResponse.statusText,
+          url: changesUrl,
+          errorText
+        });
+        throw new Error(`Failed to fetch PR changes: ${changesResponse.status} ${changesResponse.statusText}`);
       }
 
       const changesData = await changesResponse.json();
@@ -274,7 +282,7 @@ Return ONLY valid JSON in this format:
             }
           };
 
-          await fetch(threadUrl, {
+          const response = await fetch(threadUrl, {
             method: 'POST',
             headers: {
               'Authorization': `Basic ${btoa(`:${token}`)}`,
@@ -282,6 +290,23 @@ Return ONLY valid JSON in this format:
             },
             body: JSON.stringify(thread)
           });
+          const respText = await response.text();
+          if (!response.ok) {
+            console.error('Failed to post thread:', {
+              status: response.status,
+              statusText: response.statusText,
+              url: threadUrl,
+              body: thread,
+              respText
+            });
+          } else {
+            console.log('Thread posted successfully:', {
+              status: response.status,
+              url: threadUrl,
+              body: thread,
+              respText
+            });
+          }
         }
       }
 
