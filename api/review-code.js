@@ -1,0 +1,42 @@
+// Vercel serverless function for /api/review-code
+import fetch from 'node-fetch';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OPENAI_API_KEY is not set. Please configure your environment variable.' });
+  }
+  try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'Missing required field: messages (array)' });
+    }
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4-1106-preview',
+        messages: messages,
+        max_tokens: 4000,
+        temperature: 0.2
+      })
+    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      return res.status(response.status).json({ 
+        error: 'OpenAI API request failed',
+        details: errorData 
+      });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', message: error.message });
+  }
+}
