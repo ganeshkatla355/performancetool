@@ -83,6 +83,9 @@ app.post('/api/execution-plan', async (req, res) => {
 // ======================= OPENAI ENDPOINTS =============
 // PR Review
 app.post('/api/analyze-pr', async (req, res) => {
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OPENAI_API_KEY is not set. Please configure your environment variable.' });
+  }
   try {
     let { systemPrompt, userMessage } = req.body;
     if (!systemPrompt || !userMessage) {
@@ -152,6 +155,9 @@ app.post('/api/analyze-pr', async (req, res) => {
 
 // Code Review
 app.post('/api/review-code', async (req, res) => {
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OPENAI_API_KEY is not set. Please configure your environment variable.' });
+  }
   try {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
@@ -201,7 +207,27 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+// Health check for OpenAI API key
+app.get('/api/openai-health', (req, res) => {
+  if (!OPENAI_API_KEY) {
+    return res.status(500).json({ status: 'error', message: 'OPENAI_API_KEY is not set.' });
+  }
+  // Mask all but last 4 chars
+  const masked = OPENAI_API_KEY.length > 8
+    ? OPENAI_API_KEY.slice(0, 4) + '...' + OPENAI_API_KEY.slice(-4)
+    : '****';
+  res.json({ status: 'ok', message: 'OPENAI_API_KEY is set.', key: masked });
+});
+
 app.listen(PORT, () => {
+  let masked = OPENAI_API_KEY && OPENAI_API_KEY.length > 8
+    ? OPENAI_API_KEY.slice(0, 4) + '...' + OPENAI_API_KEY.slice(-4)
+    : '****';
   console.log(`🚀 Proxy server running on http://localhost:${PORT}`);
   console.log(`📡 API endpoint: http://localhost:${PORT}/api/analyze-pr`);
+  if (OPENAI_API_KEY) {
+    console.log(`🔑 OPENAI_API_KEY loaded: ${masked}`);
+  } else {
+    console.warn('⚠️ OPENAI_API_KEY is NOT set!');
+  }
 });
