@@ -34,7 +34,10 @@ export default function ReactCodeReviewer() {
 
     try {
       const apiUrl = 'https://api.openai.com/v1/chat/completions';
-      const OPENAI_API_KEY = "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"; // Replace with your actual key or use env variable
+      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+      if (!OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY is not set. Please configure your environment variable.');
+      }
 
       const systemPrompt = `You are an expert React code reviewer. Review the following React code and provide a comprehensive analysis following these best practices and standards:\n\n**React Best Practices to Check:**\n1. Component Structure & Organization\n2. Hooks usage (useState, useEffect, useMemo, useCallback)\n3. Props validation and TypeScript types\n4. Performance optimizations\n5. Accessibility (a11y)\n6. Code readability and maintainability\n7. Error handling\n8. Security concerns\n9. Testing considerations\n10. Modern React patterns (avoid deprecated APIs)\n\n**Output Format:**\nRespond ONLY with a JSON object (no markdown, no preamble) in this exact structure:\n{\n  "overallScore": <number 0-100>,\n  "summary": "<brief summary>",\n  "issues": [\n    {\n      "severity": "critical|high|medium|low",\n      "category": "<category name>",\n      "issue": "<description>",\n      "recommendation": "<how to fix>"\n    }\n  ],\n  "goodPractices": ["<practice 1>", "<practice 2>"],\n  "securityConcerns": ["<concern 1>"] or [],\n  "performanceImprovements": ["<improvement 1>"] or [],\n  "accessibilityIssues": ["<issue 1>"] or [],\n  "suggestedCode": "<complete refactored code with all fixes applied>"\n}\n\n**Code to Review:**\n\`\`\`jsx\n${code}\n\`\`\`\n\nRemember: Return ONLY the JSON object, nothing else.`;
 
@@ -90,7 +93,7 @@ export default function ReactCodeReviewer() {
             <Code className="w-12 h-12 text-indigo-600 mr-3" />
             <h1 className="text-4xl font-bold text-white">React Code Reviewer</h1>
           </div>
-          <p className="text-white text-lg">AI-powered code review following React best practices</p>
+          <p className="text-white text-lg">Scoolcafe - AI-powered code review following React best practices</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
