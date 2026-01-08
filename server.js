@@ -10,7 +10,7 @@ import sql from 'mssql';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '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';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // ======================= MIDDLEWARE ====================
 app.use(cors({
