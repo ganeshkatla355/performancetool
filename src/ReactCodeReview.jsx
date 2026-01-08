@@ -33,33 +33,17 @@ export default function ReactCodeReviewer() {
     setReview(null);
 
     try {
-      const apiUrl = 'https://api.openai.com/v1/chat/completions';
-      const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-      if (!OPENAI_API_KEY) {
-        throw new Error('OPENAI_API_KEY is not set. Please configure your environment variable.');
-      }
-
+      // Use backend endpoint instead of direct OpenAI call
       const systemPrompt = `You are an expert React code reviewer. Review the following React code and provide a comprehensive analysis following these best practices and standards:\n\n**React Best Practices to Check:**\n1. Component Structure & Organization\n2. Hooks usage (useState, useEffect, useMemo, useCallback)\n3. Props validation and TypeScript types\n4. Performance optimizations\n5. Accessibility (a11y)\n6. Code readability and maintainability\n7. Error handling\n8. Security concerns\n9. Testing considerations\n10. Modern React patterns (avoid deprecated APIs)\n\n**Output Format:**\nRespond ONLY with a JSON object (no markdown, no preamble) in this exact structure:\n{\n  "overallScore": <number 0-100>,\n  "summary": "<brief summary>",\n  "issues": [\n    {\n      "severity": "critical|high|medium|low",\n      "category": "<category name>",\n      "issue": "<description>",\n      "recommendation": "<how to fix>"\n    }\n  ],\n  "goodPractices": ["<practice 1>", "<practice 2>"],\n  "securityConcerns": ["<concern 1>"] or [],\n  "performanceImprovements": ["<improvement 1>"] or [],\n  "accessibilityIssues": ["<issue 1>"] or [],\n  "suggestedCode": "<complete refactored code with all fixes applied>"\n}\n\n**Code to Review:**\n\`\`\`jsx\n${code}\n\`\`\`\n\nRemember: Return ONLY the JSON object, nothing else.`;
 
-      const response = await fetch(apiUrl, {
+      const response = await fetch('/api/review-code', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-4',
           messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: code
-            }
-          ],
-          temperature: 0.2
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: code }
+          ]
         })
       });
 
@@ -69,12 +53,11 @@ export default function ReactCodeReviewer() {
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
-
+      // If backend returns OpenAI format, extract content, else use as is
+      let content = data.choices?.[0]?.message?.content || data.content || JSON.stringify(data);
       // Clean up the response - remove markdown code blocks if present
       let cleanContent = content.trim();
       cleanContent = cleanContent.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-
       const reviewData = JSON.parse(cleanContent);
       setReview(reviewData);
     } catch (err) {
