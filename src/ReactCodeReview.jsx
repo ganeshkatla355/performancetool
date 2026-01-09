@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Code, Loader2, FileCode } from 'lucide-react';
 
 export default function ReactCodeReviewer() {
+  const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
     const getSeverityColor = (severity) => {
       switch (severity) {
         case 'critical': return 'bg-red-100 text-red-800 border-red-300';
@@ -40,13 +41,27 @@ export default function ReactCodeReviewer() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: code }
-          ]
+          code: code,
+          systemPrompt: systemPrompt
         })
       });
-
+      const body = JSON.stringify({
+          code: code,
+          systemPrompt: systemPrompt
+        })
+// const response = await fetch('https://api.openai.com/v1/chat/completions', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': `Bearer ${OPENAI_API_KEY}`
+//       },
+//       body: JSON.stringify({
+//         model: 'gpt-4-1106-preview',
+//         messages: body,
+//         max_tokens: 4000,
+//         temperature: 0.2
+//       })
+//     });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error?.message || 'API request failed');

@@ -7,7 +7,7 @@ export default function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_API_KEY = process.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;;
   if (!OPENAI_API_KEY) {
     return res.status(500).json({ status: 'error', message: 'OPENAI_API_KEY is not set.' });
   }

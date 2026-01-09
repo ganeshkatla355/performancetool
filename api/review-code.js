@@ -12,15 +12,28 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_API_KEY = process.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
     return res.status(500).json({ error: 'OPENAI_API_KEY is not set. Please configure your environment variable.' });
   }
   try {
-    const { messages } = req.body;
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'Missing required field: messages (array)' });
+    const { messages, code, systemPrompt } = req.body;
+    console.log('Received messages:', messages, req.body);
+    
+    // Support both message formats
+    let messagesArray;
+    if (messages && Array.isArray(messages)) {
+      messagesArray = messages;
+    } else if (code && systemPrompt) {
+      // Build messages from code and systemPrompt
+      messagesArray = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: code }
+      ];
+    } else {
+      return res.status(400).json({ error: 'Missing required fields: messages (array) or code + systemPrompt' });
     }
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -29,7 +42,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-4-1106-preview',
-        messages: messages,
+        messages: messagesArray,
         max_tokens: 4000,
         temperature: 0.2
       })
