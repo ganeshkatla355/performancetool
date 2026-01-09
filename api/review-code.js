@@ -1,6 +1,4 @@
 // Vercel serverless function for /api/review-code
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,7 +16,7 @@ export default async function handler(req, res) {
   }
   try {
     const { messages, code, systemPrompt } = req.body;
-    console.log('Received messages:', messages, req.body);
+    console.log('Received request body:', { hasMessages: !!messages, hasCode: !!code });
     
     // Support both message formats
     let messagesArray;
@@ -34,7 +32,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields: messages (array) or code + systemPrompt' });
     }
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await globalThis.fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
