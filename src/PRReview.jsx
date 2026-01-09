@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle, XCircle, Clock, Upload, FileCode, Bot, GitPul
 
 const AIPRReviewSystem = () => {
   const [prUrl, setPrUrl] = useState('');
-  const [azureToken, setAzureToken] = useState('AUdvztla1xnYRO0xnFRbU9nGBEdutBXvSutLNsGohWrKfkqMrGcPJQQJ99CAACAAAAAAZR5mAAASAZDO4JzD');
+  const [azureToken, setAzureToken] = useState('');
   const [reviewing, setReviewing] = useState(false);
   const [reviewResult, setReviewResult] = useState(null);
   const [error, setError] = useState('');
@@ -155,7 +155,7 @@ Return ONLY valid JSON in this format:
       
       const prResponse = await fetch(apiUrl, {
         headers: {
-          'Authorization': `Basic ${btoa(`:${token}`)}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -178,7 +178,7 @@ Return ONLY valid JSON in this format:
       
       const changesResponse = await fetch(changesUrl, {
         headers: {
-          'Authorization': `Basic ${btoa(`:${token}`)}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -211,7 +211,7 @@ Return ONLY valid JSON in this format:
           
           const contentResponse = await fetch(contentUrl, {
             headers: {
-              'Authorization': `Basic ${btoa(`:${token}`)}`,
+              'Authorization': `Bearer ${token}`,
               'Accept': 'text/plain'
             }
           });
@@ -285,7 +285,7 @@ Return ONLY valid JSON in this format:
           const response = await fetch(threadUrl, {
             method: 'POST',
             headers: {
-              'Authorization': `Basic ${btoa(`:${token}`)}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify(thread)
@@ -325,7 +325,7 @@ Return ONLY valid JSON in this format:
       await fetch(summaryUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${btoa(`:${token}`)}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
