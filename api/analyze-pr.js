@@ -1,6 +1,4 @@
 // Vercel serverless function for /api/analyze-pr
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,7 +34,7 @@ export default async function handler(req, res) {
         userMessage = userMessage.replace(/\[.*\]/s, JSON.stringify(filesArr, null, 2));
       }
     } catch (e) {}
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await globalThis.fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
